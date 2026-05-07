@@ -7,7 +7,8 @@
     "backend": "cd backend && npm run dev",
     "frontend": "cd frontend && npm run dev",
     "build": "cd frontend && npm install && npm run build",
-    "install-all": "cd backend && npm install && cd ../frontend && npm install"
+    "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "postinstall": "cd backend && npm install"
   },
   "engines": {
     "node": ">=20.0.0"
