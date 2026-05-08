@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
 const auth = require('../middleware/auth');
@@ -11,11 +12,18 @@ router.get('/', auth, async (req, res) => {
         if (req.user.role === 'Admin') {
             const adminProjects = await Project.find({ admin: req.user.id }).select('_id');
             const adminProjectIds = adminProjects.map(p => p._id);
-            tasks = await Task.find({ project: { $in: adminProjectIds } })
+            tasks = await Task.find({
+                $or: [
+                    { project: { $in: adminProjectIds } },
+                    { assignedTo: req.user.id }
+                ]
+            })
                 .populate('assignedTo', 'name email')
                 .populate('project', 'name');
         } else {
-            tasks = await Task.find({ assignedTo: req.user.id }).populate('project', 'name');
+            tasks = await Task.find({ assignedTo: req.user.id })
+                .populate('assignedTo', 'name email')
+                .populate('project', 'name');
         }
         res.json(tasks);
     } catch (err) {
@@ -112,7 +120,7 @@ router.get('/stats', auth, async (req, res) => {
             const adminProjectIds = adminProjects.map(p => p._id);
             filter.project = { $in: adminProjectIds };
         } else {
-            filter.assignedTo = req.user.id;
+            filter.assignedTo = new mongoose.Types.ObjectId(req.user.id);
         }
 
         const statsArray = await Task.aggregate([

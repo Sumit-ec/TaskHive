@@ -17,6 +17,8 @@ const Projects = () => {
 
     useEffect(() => {
         fetchProjects();
+        const interval = setInterval(fetchProjects, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     const fetchProjects = async () => {
